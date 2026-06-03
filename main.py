@@ -9,10 +9,6 @@ from cvat_sdk.core.helpers import get_paginated_collection
 
 load_dotenv()
 
-ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "92bcf3876dcf5a14d9808ea64abd40cf3649404c2feebff9f59eace72b6093e2")
-
-load_dotenv()
-
 CVAT_HOST = os.getenv("CVAT_HOST", "http://localhost:8080")
 CVAT_USERNAME = os.getenv("CVAT_USERNAME", "admin")
 CVAT_PASSWORD = os.getenv("CVAT_PASSWORD", "")
