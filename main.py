@@ -15,6 +15,7 @@ CVAT_PASSWORD = os.getenv("CVAT_PASSWORD", "")
 ORG_ID = int(os.getenv("ORG_ID", "6"))
 
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
+PUBLIC_DIR = os.path.join(os.path.dirname(__file__), "public")
 TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "templates")
 
 USER_GROUPS = [
@@ -43,6 +44,7 @@ _ALL_USERNAMES = [u for _, users in USER_GROUPS for u in users]
 app = FastAPI(title="НЦМУ Мониторинг разметки")
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+app.mount("/public", StaticFiles(directory=PUBLIC_DIR), name="public")
 
 
 def get_client() -> Client:

@@ -182,19 +182,19 @@ function renderStatsContent(data) {
       </div>
       <div class="stat-item">
         <div class="stat-value">${data.total_jobs}</div>
-        <div class="stat-label">Jobs</div>
+        <div class="stat-label">Задания</div>
       </div>
       <div class="stat-item">
         <div class="stat-value">${(data.total_frames ?? 0).toLocaleString()}</div>
-        <div class="stat-label">Frames</div>
+        <div class="stat-label">Кадры</div>
       </div>
     </div>
     <div style="margin-top:16px;">
-      <div style="font-size:12px;font-weight:500;color:var(--text-dim);margin-bottom:6px;">Jobs по статусу:</div>
+      <div style="font-size:12px;font-weight:500;color:var(--text-dim);margin-bottom:6px;">Задания по статусу:</div>
       <div class="status-list">${statusHtml || '<span class="badge badge-default">нет данных</span>'}</div>
     </div>
     <div style="margin-top:12px;">
-      <div style="font-size:12px;font-weight:500;color:var(--text-dim);margin-bottom:6px;">Jobs по этапу:</div>
+      <div style="font-size:12px;font-weight:500;color:var(--text-dim);margin-bottom:6px;">Задания по этапу:</div>
       <div class="status-list">${stageHtml || '<span class="badge badge-default">нет данных</span>'}</div>
     </div>
     <div style="margin-top:12px;">
