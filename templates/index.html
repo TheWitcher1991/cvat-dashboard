@@ -10,12 +10,32 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
+      --bg: #ffffff;
+      --bg-card: #f4f4f5;
+      --bg-hover: #e4e4e7;
+      --bg-muted: #e4e4e7;
+      --border: #d4d4d8;
+      --text: #09090b;
+      --text-muted: #52525b;
+      --text-dim: #a1a1aa;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --accent-bg: rgba(59, 130, 246, 0.1);
+      --green: #22c55e;
+      --green-bg: rgba(34, 197, 94, 0.1);
+      --yellow: #eab308;
+      --yellow-bg: rgba(234, 179, 8, 0.1);
+      --red: #ef4444;
+      --red-bg: rgba(239, 68, 68, 0.1);
+      --radius: 8px;
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    :root.dark {
       --bg: #09090b;
       --bg-card: #18181b;
       --bg-hover: #27272a;
       --bg-muted: #1f1f23;
       --border: #27272a;
-      --border-active: #3b82f6;
       --text: #fafafa;
       --text-muted: #a1a1aa;
       --text-dim: #71717a;
@@ -45,8 +65,6 @@
     header h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
     header p { color: var(--text-muted); margin-top: 4px; font-size: 13px; }
 
-    .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
-
     .overview-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -58,35 +76,25 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
+    .overview-card svg { margin-bottom: 4px; }
     .overview-card .label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500; }
-    .overview-card .value { font-size: 26px; font-weight: 700; margin-top: 4px; letter-spacing: -0.02em; }
+    .overview-card .value { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
 
     .section-title { font-size: 15px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
     .section-title .count-badge { font-size: 11px; font-weight: 500; background: var(--bg-hover); color: var(--text-muted); padding: 2px 8px; border-radius: 99px; }
 
-    /* Tabs */
     .tabs { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
     .tab {
-      padding: 7px 16px;
-      font-size: 13px;
-      font-weight: 500;
-      font-family: var(--font);
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: all 0.1s;
+      padding: 7px 16px; font-size: 13px; font-weight: 500; font-family: var(--font);
+      border-radius: 6px; border: 1px solid var(--border);
+      background: transparent; color: var(--text-muted); cursor: pointer; transition: all 0.1s;
     }
     .tab:hover { background: var(--bg-hover); color: var(--text); }
     .tab.active { background: var(--accent); border-color: var(--accent); color: white; }
-    .tab .tab-count {
-      display: inline-block;
-      margin-left: 6px;
-      font-size: 11px;
-      opacity: 0.6;
-    }
 
     .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -119,7 +127,6 @@
     .btn-primary { background: var(--accent); border-color: var(--accent); color: white; }
     .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
     .btn-sm { padding: 4px 10px; font-size: 11px; }
-    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
     .badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 500; }
     .badge-completed { background: var(--green-bg); color: var(--green); }
@@ -128,26 +135,105 @@
     .badge-rejected { background: var(--red-bg); color: var(--red); }
     .badge-default { background: var(--bg-hover); color: var(--text-muted); }
 
-    .stats-panel { margin-top: 20px; display: none; animation: fadeIn 0.15s ease; }
-    .stats-panel.open { display: block; }
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      max-width: 600px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      animation: fadeIn 0.15s ease;
+    }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-title { font-size: 15px; font-weight: 600; }
+    .modal-close {
+      width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+      border-radius: 6px; border: none; background: transparent; color: var(--text-dim);
+      cursor: pointer; font-size: 16px;
+    }
+    .modal-close:hover { background: var(--bg-hover); color: var(--text); }
+    .modal-body { padding: 20px; }
+
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 
-    .stats-panel .card { margin-bottom: 12px; }
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-top: 12px; }
-    .stat-item { text-align: center; padding: 12px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; }
+    .stat-item { text-align: center; padding: 12px; background: var(--bg-muted); border-radius: var(--radius); }
     .stat-item .stat-value { font-size: 22px; font-weight: 700; }
     .stat-item .stat-label { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
     .status-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .status-section { margin-top: 16px; }
+    .status-section-title { font-size: 12px; font-weight: 500; color: var(--text-dim); margin-bottom: 6px; }
 
     .alert { padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--red); background: var(--red-bg); color: var(--red); margin-bottom: 16px; font-size: 13px; display: none; }
     .alert.show { display: block; }
 
-    .toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
-    .toolbar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-
     .footer-text { text-align: center; color: var(--text-dim); font-size: 12px; margin-top: 40px; padding-bottom: 20px; }
+    .cards-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+    }
+    .user-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      transition: border-color 0.15s;
+    }
+    .user-card:hover { border-color: var(--text-dim); }
+    .user-card-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .user-card .group-badge {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-dim);
+      background: var(--bg-muted);
+      padding: 2px 8px;
+      border-radius: 99px;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 900px) {
+      .cards-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 600px) {
+      .cards-grid { grid-template-columns: 1fr; }
+    }
 
     .empty-state { text-align: center; color: var(--text-dim); padding: 32px; }
+
+    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg-muted) 25%, var(--bg-hover) 50%, var(--bg-muted) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s ease-in-out infinite;
+      border-radius: 6px;
+    }
+    .skeleton-sm { height: 12px; width: 60%; }
+    .skeleton-lg { height: 28px; width: 40%; }
+    .skeleton-card { height: 68px; width: 100%; }
+    .skeleton-avatar { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; }
+    .skeleton-text { height: 12px; width: 100px; }
+    .skeleton-badge { height: 18px; width: 50px; border-radius: 99px; }
 
     @media (max-width: 640px) {
       body { padding: 12px; }
@@ -158,69 +244,65 @@
 </head>
 <body>
   <div class="container" id="app">
-    <header>
-      <h1>НЦМУ Мониторинг разметки</h1>
-      <p>СтГАУ · НЦМУ «Агроинженерия будущего»</p>
+    <header style="display:flex;align-items:flex-start;justify-content:space-between;">
+      <div>
+        <h1>НЦМУ Мониторинг разметки</h1>
+        <p>СтГАУ · НЦМУ «Агроинженерия будущего»</p>
+      </div>
+      <button class="btn btn-sm" id="themeToggle" onclick="toggleTheme()" title="Сменить тему">
+        <svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
     </header>
 
     <div class="alert" id="errorAlert"></div>
 
     <div class="overview-grid" id="overview">
-      <div class="overview-card"><div class="label">Проекты</div><div class="value" id="totalProjects">—</div></div>
-      <div class="overview-card"><div class="label">Задачи</div><div class="value" id="totalTasks">—</div></div>
-      <div class="overview-card"><div class="label">Jobs</div><div class="value" id="totalJobs">—</div></div>
-      <div class="overview-card"><div class="label">Разметчики</div><div class="value" id="totalAnnotators">—</div></div>
+      <div class="overview-card">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/><path d="M3 9h18"/><path d="M3 15h18"/></svg>
+        <div class="label">Проекты</div><div class="value" id="totalProjects"><div class="skeleton skeleton-lg"></div></div>
+      </div>
+      <div class="overview-card">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+        <div class="label">Задачи</div><div class="value" id="totalTasks"><div class="skeleton skeleton-lg"></div></div>
+      </div>
+      <div class="overview-card">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <div class="label">Разметчики</div><div class="value" id="totalAnnotators"><div class="skeleton skeleton-lg"></div></div>
+      </div>
     </div>
 
-    <div class="toolbar">
-      <div class="section-title">
-        Разметчики
-        <span class="count-badge" id="annotatorCount">0</span>
-      </div>
-      <div class="toolbar-actions">
-        <button class="btn btn-primary" id="getStatsBtn" onclick="loadStats()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
-          Получить статистику
-        </button>
-        <button class="btn" id="refreshBtn" onclick="loadStats()" style="display:none;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
-          Обновить
-        </button>
-      </div>
+    <div class="section-title">
+      Разметчики
+      <span class="count-badge" id="annotatorCount">0</span>
     </div>
 
     <div class="tabs" id="tabs"></div>
 
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Пользователь</th>
-            <th>Группа</th>
-            <th>Projects</th>
-            <th>Tasks</th>
-            <th>Jobs</th>
-            <th>Frames</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="annotatorsBody">
-          <tr><td colspan="5" style="text-align:center;color:var(--text-dim);padding:32px;">Загрузка...</td></tr>
-        </tbody>
-      </table>
+    <div id="groupStatsBar" style="display:none;margin-bottom:12px;">
+      <button class="btn btn-sm" onclick="openGroupStats()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+        Статистика группы
+      </button>
     </div>
 
-    <div class="stats-panel" id="statsPanel">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-        <div class="section-title" id="statsPanelTitle">Статистика</div>
-        <button class="btn btn-sm" onclick="closeStats()">✕ Закрыть</button>
-      </div>
-      <div id="statsContent"></div>
-    </div>
+    <div class="cards-grid" id="annotatorsContainer"></div>
 
     <div class="footer-text">СтГАУ · НЦМУ «Агроинженерия будущего» · НЦМУ Мониторинг разметки</div>
   </div>
 
-  <script src="/static/app.js"></script>
+  <!-- Modal -->
+  <div class="modal-overlay" id="statsModal">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="modalTitle">Статистика</span>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="modalContent">
+        <div style="text-align:center;color:var(--text-dim);padding:20px;">Загрузка...</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js?v=5"></script>
 </body>
 </html>

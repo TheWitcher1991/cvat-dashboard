@@ -60,6 +60,42 @@ def _user_filter(usernames: list[str]) -> str:
     })
 
 
+def _single_filter(field: str, value: str) -> str:
+    return json.dumps({"==": [{"var": field}, value]})
+
+
+_PAGE_SIZE = 10000
+
+
+def _fetch_all(endpoint, **kwargs):
+    """Fetch all items using pagination, returns list."""
+    kwargs.setdefault("page_size", 500)
+    return get_paginated_collection(endpoint=endpoint, **kwargs)
+
+
+def _fetch_jobs_by_task_ids(client, task_ids: list[int]) -> list:
+    """Fetch jobs for a list of task IDs, batching to avoid 414."""
+    if not task_ids:
+        return []
+    all_jobs = []
+    BATCH = 200
+    for i in range(0, len(task_ids), BATCH):
+        batch = task_ids[i:i + BATCH]
+        jobs = get_paginated_collection(
+            endpoint=client.api_client.jobs_api.list_endpoint,
+            filter=json.dumps({"in": [{"var": "task_id"}, batch]}),
+            page_size=500,
+        )
+        all_jobs.extend(jobs)
+    return all_jobs
+
+
+def _count_only(endpoint, **kwargs):
+    """Get just the count of matching items (one API call, page_size=1)."""
+    res, _ = endpoint.call_with_http_info(**kwargs, page=1, page_size=1)
+    return res.count
+
+
 @app.get("/", response_class=HTMLResponse)
 async def index():
     with open(os.path.join(TEMPLATES_DIR, "index.html"), encoding="utf-8") as f:
@@ -72,6 +108,66 @@ async def list_groups():
         {"name": name, "usernames": users, "count": len(users)}
         for name, users in USER_GROUPS
     ]
+
+
+@app.get("/api/groups/{group_name}/stats")
+async def group_stats(group_name: str):
+    usernames = None
+    for name, users in USER_GROUPS:
+        if name == group_name:
+            usernames = users
+            break
+
+    if usernames is None:
+        raise HTTPException(status_code=404, detail="Group not found")
+    if not usernames:
+        return {"group": group_name, "total_projects": 0, "total_tasks": 0, "total_jobs": 0, "total_frames": 0, "jobs_by_status": {}, "jobs_by_stage": {}, "tasks_by_status": {}}
+
+    client = get_client()
+    try:
+        flt = _user_filter(usernames)
+        tasks = _fetch_all(
+            endpoint=client.api_client.tasks_api.list_endpoint,
+            filter=flt,
+        )
+        projects = _fetch_all(
+            endpoint=client.api_client.projects_api.list_endpoint,
+            filter=flt,
+        )
+
+        task_ids = [t.id for t in tasks]
+        jobs = _fetch_jobs_by_task_ids(client, task_ids)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        client.close()
+
+    total_jobs = len(jobs)
+    total_frames = sum(getattr(j, "frame_count", 0) or 0 for j in jobs)
+
+    jobs_by_status = {}
+    jobs_by_stage = {}
+    for j in jobs:
+        s = str(j.status) if j.status else "unknown"
+        jobs_by_status[s] = jobs_by_status.get(s, 0) + 1
+        stage = str(getattr(j, "stage", "")) if getattr(j, "stage", None) else "unknown"
+        jobs_by_stage[stage] = jobs_by_stage.get(stage, 0) + 1
+
+    tasks_by_status = {}
+    for t in tasks:
+        s = str(t.status) if t.status else "unknown"
+        tasks_by_status[s] = tasks_by_status.get(s, 0) + 1
+
+    return {
+        "group": group_name,
+        "total_projects": len(projects),
+        "total_tasks": len(tasks),
+        "total_jobs": total_jobs,
+        "total_frames": total_frames,
+        "jobs_by_status": jobs_by_status,
+        "jobs_by_stage": jobs_by_stage,
+        "tasks_by_status": tasks_by_status,
+    }
 
 
 @app.get("/api/annotators")
@@ -125,29 +221,26 @@ async def annotator_stats(username: str):
 
     client = get_client()
     try:
-        jobs = get_paginated_collection(
-            endpoint=client.api_client.jobs_api.list_endpoint,
-            assignee=username,
-        )
-        tasks = get_paginated_collection(
-            endpoint=client.api_client.tasks_api.list_endpoint,
-            filter=json.dumps({
-                "or": [
-                    {"==": [{"var": "owner"}, username]},
-                    {"==": [{"var": "assignee"}, username]},
-                ]
-            }),
-        )
-        print(tasks)
-        projects = get_paginated_collection(
+        user_flt = _single_filter("owner", username)
+        user_assignee_flt = _single_filter("assignee", username)
+        user_or_flt = json.dumps({
+            "or": [
+                {"==": [{"var": "owner"}, username]},
+                {"==": [{"var": "assignee"}, username]},
+            ]
+        })
+
+        projects = _fetch_all(
             endpoint=client.api_client.projects_api.list_endpoint,
-            filter=json.dumps({
-                "or": [
-                    {"==": [{"var": "owner"}, username]},
-                    {"==": [{"var": "assignee"}, username]},
-                ]
-            }),
+            filter=user_or_flt,
         )
+        tasks = _fetch_all(
+            endpoint=client.api_client.tasks_api.list_endpoint,
+            filter=user_or_flt,
+        )
+
+        task_ids = [t.id for t in tasks]
+        jobs = _fetch_jobs_by_task_ids(client, task_ids)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:
@@ -189,16 +282,12 @@ async def overview():
     client = get_client()
     try:
         flt = _user_filter(_ALL_USERNAMES)
-        assignee_flt = json.dumps({"in": [{"var": "assignee"}, _ALL_USERNAMES]})
 
         projects_res, _ = client.api_client.projects_api.list_endpoint.call_with_http_info(
             filter=flt, page=1, page_size=1
         )
         tasks_res, _ = client.api_client.tasks_api.list_endpoint.call_with_http_info(
             filter=flt, page=1, page_size=1
-        )
-        jobs_res, _ = client.api_client.jobs_api.list_endpoint.call_with_http_info(
-            filter=assignee_flt, page=1, page_size=1
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -208,7 +297,7 @@ async def overview():
     return {
         "total_projects": projects_res.count,
         "total_tasks": tasks_res.count,
-        "total_jobs": jobs_res.count,
+        "total_jobs": 0,
         "total_annotators": len(_ALL_USERNAMES),
     }
 
@@ -220,20 +309,27 @@ async def annotators_batch_stats():
 
     client = get_client()
     try:
-        flt = json.dumps({"in": [{"var": "assignee"}, _ALL_USERNAMES]})
-        jobs = get_paginated_collection(
-            endpoint=client.api_client.jobs_api.list_endpoint,
-            filter=flt,
-        )
         user_flt = _user_filter(_ALL_USERNAMES)
-        tasks = get_paginated_collection(
-            endpoint=client.api_client.tasks_api.list_endpoint,
-            filter=user_flt,
-        )
-        projects = get_paginated_collection(
+
+        projects = _fetch_all(
             endpoint=client.api_client.projects_api.list_endpoint,
             filter=user_flt,
         )
+        tasks = _fetch_all(
+            endpoint=client.api_client.tasks_api.list_endpoint,
+            filter=user_flt,
+        )
+
+        task_ids = [t.id for t in tasks]
+        all_jobs = _fetch_jobs_by_task_ids(client, task_ids)
+
+        task_jobs = {}
+        for j in all_jobs:
+            tid = getattr(j, "task_id", None)
+            if tid is not None:
+                if tid not in task_jobs:
+                    task_jobs[tid] = []
+                task_jobs[tid].append(j)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:
@@ -247,13 +343,8 @@ async def annotators_batch_stats():
     stats = {u: {"username": u, "group": username_to_group.get(u, ""), "total_projects": 0, "total_tasks": 0, "total_jobs": 0, "total_frames": 0, "jobs_by_status": {}, "tasks_by_status": {}} for u in _ALL_USERNAMES}
 
     for p in projects:
-        uname = None
-        if p.assignee and p.assignee.username in stats:
-            uname = p.assignee.username
-        elif p.owner and p.owner.username in stats:
-            uname = p.owner.username
-        if uname:
-            stats[uname]["total_projects"] += 1
+        if p.owner and p.owner.username in stats:
+            stats[p.owner.username]["total_projects"] += 1
 
     for t in tasks:
         uname = None
@@ -264,16 +355,14 @@ async def annotators_batch_stats():
         if uname:
             s = stats[uname]
             s["total_tasks"] += 1
-            status = str(t.status) if t.status else "unknown"
-            s["tasks_by_status"][status] = s["tasks_by_status"].get(status, 0) + 1
+            t_status = str(t.status) if t.status else "unknown"
+            s["tasks_by_status"][t_status] = s["tasks_by_status"].get(t_status, 0) + 1
 
-    for j in jobs:
-        if j.assignee and j.assignee.username in stats:
-            s = stats[j.assignee.username]
-            s["total_jobs"] += 1
-            s["total_frames"] += getattr(j, "frame_count", 0) or 0
-            status = str(j.status) if j.status else "unknown"
-            s["jobs_by_status"][status] = s["jobs_by_status"].get(status, 0) + 1
+            for j in task_jobs.get(t.id, []):
+                s["total_jobs"] += 1
+                s["total_frames"] += getattr(j, "frame_count", 0) or 0
+                j_status = str(j.status) if j.status else "unknown"
+                s["jobs_by_status"][j_status] = s["jobs_by_status"].get(j_status, 0) + 1
 
     result = list(stats.values())
     result.sort(key=lambda x: x["total_jobs"], reverse=True)
