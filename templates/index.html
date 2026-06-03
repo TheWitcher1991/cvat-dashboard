@@ -243,7 +243,29 @@
   </style>
 </head>
 <body>
-  <div class="container" id="app">
+  <!-- Auth overlay -->
+  <div class="modal-overlay" id="authOverlay">
+    <div class="modal" style="max-width:380px;">
+      <div class="modal-header">
+        <span class="modal-title">Авторизация</span>
+      </div>
+      <div class="modal-body" style="padding:24px;">
+        <div style="text-align:center;margin-bottom:20px;">
+          <img src="/public/logo.png" alt="НЦМУ" style="height:48px;width:auto;">
+          <div style="font-size:13px;color:var(--text-muted);margin-top:8px;">НЦМУ Мониторинг разметки</div>
+        </div>
+        <input type="password" id="tokenInput" placeholder="Введите токен"
+          style="width:100%;padding:10px 14px;font-size:14px;font-family:var(--font);background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;outline:none;margin-bottom:12px;">
+        <button class="btn btn-primary" id="loginBtn" onclick="login()" style="width:100%;justify-content:center;padding:10px;">
+          Войти
+        </button>
+        <div id="loginError" style="color:var(--red);font-size:12px;margin-top:8px;text-align:center;display:none;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main app -->
+  <div class="container" id="app" style="display:none;">
     <header style="display:flex;align-items:flex-start;justify-content:space-between;">
       <div style="display:flex;align-items:center;gap:12px;">
         <img src="/public/logo.png" alt="НЦМУ" style="height:60px;width:auto;">
@@ -316,6 +338,6 @@
     </div>
   </div>
 
-  <script src="/static/app.js?v=8"></script>
+  <script src="/static/app.js?v=9"></script>
 </body>
 </html>

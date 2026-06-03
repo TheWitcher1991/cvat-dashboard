@@ -1,11 +1,15 @@
 import json
 import os
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, HTTPException, Request, Depends
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from cvat_sdk import Client
 from cvat_sdk.core.helpers import get_paginated_collection
+
+load_dotenv()
+
+ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "92bcf3876dcf5a14d9808ea64abd40cf3649404c2feebff9f59eace72b6093e2")
 
 load_dotenv()
 
@@ -13,6 +17,7 @@ CVAT_HOST = os.getenv("CVAT_HOST", "http://localhost:8080")
 CVAT_USERNAME = os.getenv("CVAT_USERNAME", "admin")
 CVAT_PASSWORD = os.getenv("CVAT_PASSWORD", "")
 ORG_ID = int(os.getenv("ORG_ID", "6"))
+ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "92bcf3876dcf5a14d9808ea64abd40cf3649404c2feebff9f59eace72b6093e2")
 
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 PUBLIC_DIR = os.path.join(os.path.dirname(__file__), "public")
@@ -98,13 +103,32 @@ def _count_only(endpoint, **kwargs):
     return res.count
 
 
-@app.get("/", response_class=HTMLResponse)
+def verify_token(request: Request):
+    auth = request.headers.get("Authorization", "")
+    if not auth.startswith("Bearer ") or auth.removeprefix("Bearer ") != ADMIN_TOKEN:
+        raise HTTPException(status_code=401, detail="Неверный токен")
+
+
+@app.get("/")
 async def index():
+    return index_html()
+
+
+@app.post("/api/auth")
+async def auth(request: Request):
+    body = await request.json()
+    token = body.get("token", "")
+    if token == ADMIN_TOKEN:
+        return {"ok": True}
+    raise HTTPException(status_code=401, detail="Неверный токен")
+
+
+def index_html():
     with open(os.path.join(TEMPLATES_DIR, "index.html"), encoding="utf-8") as f:
-        return f.read()
+        return HTMLResponse(content=f.read())
 
 
-@app.get("/api/groups")
+@app.get("/api/groups", dependencies=[Depends(verify_token)])
 async def list_groups():
     return [
         {"name": name, "usernames": users, "count": len(users)}
@@ -112,7 +136,7 @@ async def list_groups():
     ]
 
 
-@app.get("/api/groups/{group_name}/stats")
+@app.get("/api/groups/{group_name}/stats", dependencies=[Depends(verify_token)])
 async def group_stats(group_name: str):
     usernames = None
     for name, users in USER_GROUPS:
@@ -172,7 +196,7 @@ async def group_stats(group_name: str):
     }
 
 
-@app.get("/api/annotators")
+@app.get("/api/annotators", dependencies=[Depends(verify_token)])
 async def list_annotators():
     client = get_client()
     try:
@@ -216,7 +240,7 @@ async def list_annotators():
     return result
 
 
-@app.get("/api/annotators/{username}/stats")
+@app.get("/api/annotators/{username}/stats", dependencies=[Depends(verify_token)])
 async def annotator_stats(username: str):
     if username not in _ALL_USERNAMES:
         raise HTTPException(status_code=404, detail="User not found")
@@ -276,7 +300,7 @@ async def annotator_stats(username: str):
     }
 
 
-@app.get("/api/overview")
+@app.get("/api/overview", dependencies=[Depends(verify_token)])
 async def overview():
     if not _ALL_USERNAMES:
         return {"total_projects": 0, "total_tasks": 0, "total_jobs": 0, "total_annotators": 0}
@@ -304,7 +328,7 @@ async def overview():
     }
 
 
-@app.get("/api/annotators/batch-stats")
+@app.get("/api/annotators/batch-stats", dependencies=[Depends(verify_token)])
 async def annotators_batch_stats():
     if not _ALL_USERNAMES:
         return []

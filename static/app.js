@@ -2,8 +2,19 @@ let allAnnotators = [];
 let groups = [];
 let currentGroup = null;
 
+function getToken() { return localStorage.getItem('token'); }
+function setToken(t) { localStorage.setItem('token', t); }
+
 async function fetchJSON(url) {
-  const res = await fetch(url);
+  const token = getToken();
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(url, { headers });
+  if (res.status === 401) {
+    localStorage.removeItem('token');
+    showAuth();
+    throw new Error('Требуется авторизация');
+  }
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
     throw new Error(err.detail || `HTTP ${res.status}`);
@@ -37,6 +48,48 @@ function initials(u) {
   if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
   return name.slice(0, 2).toUpperCase();
 }
+
+/* ── Auth ── */
+function showAuth() {
+  document.getElementById('authOverlay').classList.add('open');
+  document.getElementById('app').style.display = 'none';
+}
+
+function hideAuth() {
+  document.getElementById('authOverlay').classList.remove('open');
+  document.getElementById('app').style.display = 'block';
+}
+
+async function login() {
+  const btn = document.getElementById('loginBtn');
+  const errEl = document.getElementById('loginError');
+  const token = document.getElementById('tokenInput').value.trim();
+  if (!token) { errEl.textContent = 'Введите токен'; errEl.style.display = 'block'; return; }
+  btn.disabled = true;
+  btn.textContent = 'Проверка...';
+  errEl.style.display = 'none';
+  try {
+    const res = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    });
+    if (!res.ok) throw new Error('Неверный токен');
+    setToken(token);
+    hideAuth();
+    init();
+  } catch (e) {
+    errEl.textContent = e.message;
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Войти';
+  }
+}
+
+document.getElementById('tokenInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') login();
+});
 
 /* ── Theme ── */
 function toggleTheme() {
@@ -307,4 +360,13 @@ async function init() {
   await loadAnnotatorList();
 }
 
-document.addEventListener('DOMContentLoaded', init);
+/* ── Bootstrap ── */
+document.addEventListener('DOMContentLoaded', () => {
+  applyTheme();
+  if (getToken()) {
+    hideAuth();
+    init();
+  } else {
+    showAuth();
+  }
+});
