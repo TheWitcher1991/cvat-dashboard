@@ -27,7 +27,7 @@
       --yellow-bg: rgba(234, 179, 8, 0.1);
       --red: #ef4444;
       --red-bg: rgba(239, 68, 68, 0.1);
-      --radius: 8px;
+      --radius: 10px;
       --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       /* Sidebar */
       --sidebar-bg: #f8f8fa;
@@ -56,7 +56,7 @@
       --yellow-bg: rgba(234, 179, 8, 0.1);
       --red: #ef4444;
       --red-bg: rgba(239, 68, 68, 0.1);
-      --radius: 8px;
+      --radius: 10px;
       --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       /* Sidebar */
       --sidebar-bg: #111113;
@@ -70,16 +70,18 @@
     html { font-size: 14px; }
     body {
       font-family: var(--font);
-      background: var(--bg);
+      background: color-mix(in srgb, var(--bg) 96%, #888);
       color: var(--text);
       min-height: 100vh;
       margin: 0;
+      padding: 8px;
     }
 
     /* ── Layout ── */
     .app-layout {
       display: flex;
-      min-height: 100vh;
+      gap: 8px;
+      min-height: calc(100vh - 16px);
     }
     .app-layout.hidden { display: none !important; }
 
@@ -98,9 +100,10 @@
       justify-content: space-between;
       height: 48px;
       padding: 0 20px;
-      border-bottom: 1px solid var(--border);
+      border: 1px solid var(--border);
       background: var(--bg);
       flex-shrink: 0;
+      border-radius: 12px;
     }
     .top-nav-left { display: flex; align-items: center; gap: 8px; }
     .top-nav-title { font-size: 14px; font-weight: 600; color: var(--text); }
@@ -134,15 +137,16 @@
     .sidebar {
       width: var(--sidebar-width);
       flex-shrink: 0;
-      background: var(--sidebar-bg);
-      border-right: 1px solid var(--sidebar-border);
+      background: var(--bg);
+      border: 1px solid var(--sidebar-border);
       display: flex;
       flex-direction: column;
       position: sticky;
-      top: 0;
-      height: 100vh;
+      top: 8px;
+      height: calc(100vh - 16px);
       padding: 0;
       overflow-y: auto;
+      border-radius: 12px;
     }
     .sidebar-header {
       display: flex;
@@ -244,6 +248,7 @@
       display: flex;
       flex-direction: column;
       gap: 2px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
     .overview-card svg { margin-bottom: 4px; }
     .overview-card .label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500; }
@@ -317,7 +322,7 @@
     .modal {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 14px;
       max-width: 600px;
       width: 100%;
       max-height: 85vh;
@@ -367,6 +372,7 @@
       justify-content: space-between;
       gap: 12px;
       transition: border-color 0.15s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
     .user-card:hover { border-color: var(--text-dim); }
     .user-card-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
@@ -381,7 +387,7 @@
     }
 
     /* ── Events view ── */
-    .events-list { border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-card); overflow: hidden; }
+    .events-list { border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-card); overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
     .event-item {
       display: flex;
       align-items: flex-start;
