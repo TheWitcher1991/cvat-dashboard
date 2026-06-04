@@ -192,6 +192,83 @@ async def group_stats(group_name: str):
     }
 
 
+@app.get("/api/dashboard", dependencies=[Depends(verify_token)])
+async def dashboard():
+    if not _ALL_USERNAMES:
+        return {"overview": {"total_projects": 0, "total_tasks": 0, "total_annotators": 0}, "groups": []}
+
+    client = get_client()
+    try:
+        flt = _user_filter(_ALL_USERNAMES)
+
+        proj_res, _ = client.api_client.projects_api.list_endpoint.call_with_http_info(
+            filter=flt, page=1, page_size=1
+        )
+        task_res, _ = client.api_client.tasks_api.list_endpoint.call_with_http_info(
+            filter=flt, page=1, page_size=1
+        )
+
+        overview = {
+            "total_projects": proj_res.count,
+            "total_tasks": task_res.count,
+            "total_annotators": len(_ALL_USERNAMES),
+        }
+
+        groups_data = []
+        total_jobs = 0
+        total_frames = 0
+
+        for group_name, usernames in USER_GROUPS:
+            if not usernames:
+                groups_data.append({
+                    "name": group_name, "count": 0,
+                    "total_projects": 0, "total_tasks": 0,
+                    "total_jobs": 0, "total_frames": 0,
+                    "jobs_by_status": {},
+                })
+                continue
+
+            gflt = _user_filter(usernames)
+            gproj, _ = client.api_client.projects_api.list_endpoint.call_with_http_info(
+                filter=gflt, page=1, page_size=1
+            )
+            gtasks = _fetch_all(
+                endpoint=client.api_client.tasks_api.list_endpoint, filter=gflt
+            )
+            gtask_ids = [t.id for t in gtasks]
+            gjobs = _fetch_jobs_by_task_ids(client, gtask_ids)
+
+            jobs_by_status = {}
+            gf = 0
+            for j in gjobs:
+                s = str(j.status) if j.status else "unknown"
+                jobs_by_status[s] = jobs_by_status.get(s, 0) + 1
+                gf += getattr(j, "frame_count", 0) or 0
+
+            groups_data.append({
+                "name": group_name,
+                "count": len(usernames),
+                "total_projects": gproj.count,
+                "total_tasks": len(gtasks),
+                "total_jobs": len(gjobs),
+                "total_frames": gf,
+                "jobs_by_status": jobs_by_status,
+            })
+            total_jobs += len(gjobs)
+            total_frames += gf
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        client.close()
+
+    return {
+        "overview": overview,
+        "groups": groups_data,
+        "totals": {"total_jobs": total_jobs, "total_frames": total_frames},
+    }
+
+
 @app.get("/api/annotators", dependencies=[Depends(verify_token)])
 async def list_annotators():
     client = get_client()

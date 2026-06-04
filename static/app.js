@@ -336,7 +336,8 @@ function switchView(name) {
   document.querySelectorAll('.view').forEach(el => {
     el.classList.toggle('active', el.id === `view-${name}`);
   });
-  if (name === 'events') loadEvents();
+  if (name === 'users') loadUsers();
+  else if (name === 'events') loadEvents();
 }
 
 /* ── Events feed ── */
@@ -412,11 +413,14 @@ function showSkeletons() {
   `).join('');
 }
 
-async function init() {
-  applyTheme();
+async function loadUsers() {
   showSkeletons();
   await Promise.all([loadGroups(), loadOverview()]);
   await loadAnnotatorList();
+}
+
+async function init() {
+  applyTheme();
 }
 
 /* ── Bootstrap ── */
