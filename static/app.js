@@ -52,12 +52,12 @@ function initials(u) {
 /* ── Auth ── */
 function showAuth() {
   document.getElementById('authOverlay').classList.add('open');
-  document.getElementById('app').style.display = 'none';
+  document.getElementById('app').classList.add('hidden');
 }
 
 function hideAuth() {
   document.getElementById('authOverlay').classList.remove('open');
-  document.getElementById('app').style.display = 'block';
+  document.getElementById('app').classList.remove('hidden');
 }
 
 async function login() {
@@ -101,10 +101,12 @@ function toggleTheme() {
 
 function updateThemeIcon() {
   const icon = document.getElementById('themeIcon');
+  const label = document.getElementById('themeLabel');
   const isDark = document.documentElement.classList.contains('dark');
   icon.innerHTML = isDark
     ? '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>'
     : '<circle cx="12" cy="12" r="5"/><path d="M12 1v2"/><path d="M12 21v2"/><path d="M4.22 4.22l1.42 1.42"/><path d="M18.36 18.36l1.42 1.42"/><path d="M1 12h2"/><path d="M21 12h2"/><path d="M4.22 19.78l1.42-1.42"/><path d="M18.36 5.64l1.42-1.42"/>';
+  if (label) label.textContent = isDark ? 'Тёмная тема' : 'Светлая тема';
 }
 
 function applyTheme() {
@@ -324,6 +326,63 @@ function openGroupStats() {
 function closeModal() {
   document.getElementById('statsModal').classList.remove('open');
   document.body.style.overflow = '';
+}
+
+/* ── View switching ── */
+function switchView(name) {
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.view === name);
+  });
+  document.querySelectorAll('.view').forEach(el => {
+    el.classList.toggle('active', el.id === `view-${name}`);
+  });
+  if (name === 'events') loadEvents();
+}
+
+/* ── Events feed ── */
+async function loadEvents() {
+  const list = document.getElementById('events-list');
+  const empty = document.getElementById('events-empty');
+  list.innerHTML = Array(5).fill('<div class="skeleton skeleton-event"></div>').join('');
+  empty.style.display = 'none';
+  try {
+    const events = await fetchJSON('/api/events');
+    if (!events.length) {
+      list.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    list.innerHTML = events.map(e => {
+      const isProject = e.type === 'project';
+      const date = e.created_date
+        ? new Date(e.created_date).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+        : '—';
+      const projectIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>';
+      const taskIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>';
+      return `<div class="event-item">
+        <div class="event-icon ${isProject ? 'project' : 'task'}">${isProject ? projectIcon : taskIcon}</div>
+        <div class="event-body">
+          <div class="event-name">${esc(e.name)}</div>
+          <div class="event-meta">
+            <span class="badge ${isProject ? 'badge-project' : 'badge-task'}">${isProject ? 'Проект' : 'Задача'}</span>
+            <span style="display:inline-flex;align-items:center;gap:3px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"/><path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/></svg> ${esc(e.owner || '—')}</span>
+            ${e.assignee ? `<span style="display:inline-flex;align-items:center;gap:3px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l14 0"/><path d="M13 18l6 -6"/><path d="M13 6l6 6"/></svg> ${esc(e.assignee)}</span>` : ''}
+            <span class="badge ${badgeClass(e.status)}">${esc(e.status)}</span>
+            <span>${date}</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    list.innerHTML = `<div class="empty-state" style="color:var(--red);padding:24px;">Ошибка: ${esc(e.message)}</div>`;
+  }
+}
+
+function esc(str) {
+  if (!str) return '';
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
 }
 
 document.getElementById('statsModal').addEventListener('click', function(e) {

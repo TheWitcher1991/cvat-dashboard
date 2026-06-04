@@ -324,6 +324,55 @@ async def overview():
     }
 
 
+@app.get("/api/events", dependencies=[Depends(verify_token)])
+async def get_events(limit: int = 30):
+    if not _ALL_USERNAMES:
+        return []
+
+    client = get_client()
+    try:
+        flt = _user_filter(_ALL_USERNAMES)
+
+        proj_res, _ = client.api_client.projects_api.list_endpoint.call_with_http_info(
+            filter=flt, sort="-created_date", page=1, page_size=limit
+        )
+        task_res, _ = client.api_client.tasks_api.list_endpoint.call_with_http_info(
+            filter=flt, sort="-created_date", page=1, page_size=limit
+        )
+        projects = proj_res.results
+        tasks = task_res.results
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        client.close()
+
+    events = []
+    for p in projects:
+        events.append({
+            "type": "project",
+            "id": p.id,
+            "name": getattr(p, "name", ""),
+            "created_date": str(p.created_date) if hasattr(p, "created_date") and p.created_date else "",
+            "owner": p.owner.username if getattr(p, "owner", None) else None,
+            "status": str(p.status) if hasattr(p, "status") and p.status else "unknown",
+        })
+
+    for t in tasks:
+        events.append({
+            "type": "task",
+            "id": t.id,
+            "name": getattr(t, "name", ""),
+            "created_date": str(t.created_date) if hasattr(t, "created_date") and t.created_date else "",
+            "owner": t.owner.username if getattr(t, "owner", None) else None,
+            "assignee": t.assignee.username if getattr(t, "assignee", None) else None,
+            "status": str(t.status) if hasattr(t, "status") and t.status else "unknown",
+            "project_id": getattr(t, "project_id", None),
+        })
+
+    events.sort(key=lambda e: e["created_date"], reverse=True)
+    return events[:limit]
+
+
 @app.get("/api/annotators/batch-stats", dependencies=[Depends(verify_token)])
 async def annotators_batch_stats():
     if not _ALL_USERNAMES:

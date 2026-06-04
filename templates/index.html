@@ -29,6 +29,14 @@
       --red-bg: rgba(239, 68, 68, 0.1);
       --radius: 8px;
       --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      /* Sidebar */
+      --sidebar-bg: #f8f8fa;
+      --sidebar-fg: #52525b;
+      --sidebar-fg-active: #09090b;
+      --sidebar-border: #e4e4e7;
+      --sidebar-accent: #e4e4e7;
+      --sidebar-accent-fg: #09090b;
+      --sidebar-width: 220px;
     }
     :root.dark {
       --bg: #09090b;
@@ -50,6 +58,14 @@
       --red-bg: rgba(239, 68, 68, 0.1);
       --radius: 8px;
       --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      /* Sidebar */
+      --sidebar-bg: #111113;
+      --sidebar-fg: #a1a1aa;
+      --sidebar-fg-active: #fafafa;
+      --sidebar-border: #27272a;
+      --sidebar-accent: #27272a;
+      --sidebar-accent-fg: #fafafa;
+      --sidebar-width: 220px;
     }
     html { font-size: 14px; }
     body {
@@ -57,8 +73,157 @@
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
+      margin: 0;
+    }
+
+    /* ── Layout ── */
+    .app-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+    .app-layout.hidden { display: none !important; }
+
+    /* ── Right panel ── */
+    .right-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    /* ── Top nav ── */
+    .top-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 48px;
+      padding: 0 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+      flex-shrink: 0;
+    }
+    .top-nav-left { display: flex; align-items: center; gap: 8px; }
+    .top-nav-title { font-size: 14px; font-weight: 600; color: var(--text); }
+    .top-nav-right { display: flex; align-items: center; gap: 4px; }
+    .top-nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      font-family: var(--font);
+      color: var(--text-muted);
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.12s;
+      white-space: nowrap;
+    }
+    .top-nav-btn:hover { background: var(--bg-hover); color: var(--text); }
+    .top-nav-sep {
+      width: 1px;
+      height: 20px;
+      background: var(--border);
+      margin: 0 4px;
+    }
+
+    /* ── Sidebar (shadcn/ui style) ── */
+    .sidebar {
+      width: var(--sidebar-width);
+      flex-shrink: 0;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--sidebar-border);
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 0;
+      overflow-y: auto;
+    }
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 14px 20px;
+      border-bottom: 1px solid var(--sidebar-border);
+    }
+    .sidebar-logo {
+      height: 32px;
+      width: auto;
+      flex-shrink: 0;
+    }
+    .sidebar-brand { min-width: 0; }
+    .sidebar-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--sidebar-fg-active);
+      line-height: 1.2;
+    }
+    .sidebar-subtitle {
+      font-size: 11px;
+      color: var(--sidebar-fg);
+      margin-top: 1px;
+    }
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 8px;
+      flex: 1;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      font-family: var(--font);
+      color: var(--sidebar-fg);
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.12s;
+      text-align: left;
+      width: 100%;
+    }
+    .nav-item:hover {
+      background: var(--sidebar-accent);
+      color: var(--sidebar-accent-fg);
+    }
+    .nav-item.active {
+      background: var(--sidebar-accent);
+      color: var(--sidebar-accent-fg);
+    }
+    .nav-icon {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+    .sidebar-footer {
+      padding: 12px 14px;
+      border-top: 1px solid var(--sidebar-border);
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    /* ── Main content ── */
+    .main-content {
+      flex: 1;
+      min-width: 0;
       padding: 24px;
     }
+    .view { display: none; }
+    .view.active { display: block; }
+    .view-header { margin-bottom: 24px; }
+    .view-header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+    .view-header p { color: var(--text-muted); margin-top: 4px; font-size: 13px; }
+
     .container { max-width: 1200px; margin: 0 auto; }
 
     header { margin-bottom: 28px; }
@@ -134,6 +299,9 @@
     .badge-review { background: var(--yellow-bg); color: var(--yellow); }
     .badge-rejected { background: var(--red-bg); color: var(--red); }
     .badge-default { background: var(--bg-hover); color: var(--text-muted); }
+
+    .badge-project { background: var(--accent-bg); color: var(--accent); }
+    .badge-task { background: var(--green-bg); color: var(--green); }
 
     /* Modal */
     .modal-overlay {
@@ -212,8 +380,48 @@
       white-space: nowrap;
     }
 
+    /* ── Events view ── */
+    .events-list { border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-card); overflow: hidden; }
+    .event-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+    }
+    .event-item:last-child { border-bottom: none; }
+    .event-item:hover { background: var(--bg-hover); }
+    .event-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .event-icon.project { background: var(--accent-bg); color: var(--accent); }
+    .event-icon.task { background: var(--green-bg); color: var(--green); }
+    .event-body { flex: 1; min-width: 0; }
+    .event-name { font-weight: 500; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .event-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 5px;
+      font-size: 12px;
+      color: var(--text-dim);
+      flex-wrap: wrap;
+    }
+
     @media (max-width: 900px) {
       .cards-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main-content { padding: 16px; }
     }
     @media (max-width: 600px) {
       .cards-grid { grid-template-columns: 1fr; }
@@ -234,9 +442,10 @@
     .skeleton-avatar { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; }
     .skeleton-text { height: 12px; width: 100px; }
     .skeleton-badge { height: 18px; width: 50px; border-radius: 99px; }
+    .skeleton-event { height: 60px; width: 100%; margin-bottom: 0; border-bottom: 1px solid var(--border); }
 
     @media (max-width: 640px) {
-      body { padding: 12px; }
+      .main-content { padding: 12px; }
       .overview-grid { grid-template-columns: repeat(2, 1fr); }
       td, th { padding: 6px 8px; }
     }
@@ -264,65 +473,114 @@
     </div>
   </div>
 
-  <!-- Main app -->
-  <div class="container" id="app" style="display:none;">
-    <header style="display:flex;align-items:flex-start;justify-content:space-between;">
-      <div style="display:flex;align-items:center;gap:12px;">
-        <img src="/public/logo.png" alt="НЦМУ" style="height:60px;width:auto;">
-        <div>
-          <h1>НЦМУ Мониторинг разметки</h1>
-          <p>СтГАУ · НЦМУ «Агроинженерия будущего»</p>
+  <!-- App -->
+  <div class="app-layout hidden" id="app">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <img src="/public/logo.png" alt="НЦМУ" class="sidebar-logo">
+        <div class="sidebar-brand">
+          <div class="sidebar-title">НЦМУ</div>
+          <div class="sidebar-subtitle">Мониторинг разметки</div>
         </div>
       </div>
-      <div style="display:flex;align-items:center;gap:6px;">
-        <a class="btn btn-sm" href="https://cvat.stgau.ru" target="_blank" title="Открыть CVAT">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-          CVAT
-        </a>
-        <a class="btn btn-sm" href="https://agroheal.stgau.ru" target="_blank" title="Открыть AgroHeal">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-          AgroHeal
-        </a>
-        <button class="btn btn-sm" id="themeToggle" onclick="toggleTheme()" title="Сменить тему">
-          <svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-view="dashboard" onclick="switchView('dashboard')">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+          <span>Дашборд</span>
         </button>
-      </div>
-    </header>
+        <button class="nav-item" data-view="events" onclick="switchView('events')">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          <span>Лента событий</span>
+        </button>
+      </nav>
+      <div class="sidebar-footer">НЦМУ «Агроинженерия будущего»</div>
+    </aside>
+    <div class="right-panel">
+      <nav class="top-nav">
+        <div class="top-nav-left">
+          <span class="top-nav-title">НЦМУ Мониторинг разметки</span>
+        </div>
+        <div class="top-nav-right">
+          <a class="top-nav-btn" href="https://cvat.stgau.ru" target="_blank" title="Открыть CVAT">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            <span>CVAT</span>
+          </a>
+          <a class="top-nav-btn" href="https://agroheal.stgau.ru" target="_blank" title="Открыть AgroHeal">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            <span>AgroHeal</span>
+          </a>
+          <span class="top-nav-sep"></span>
+          <button class="top-nav-btn" onclick="toggleTheme()" title="Сменить тему">
+            <svg id="themeIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            <span id="themeLabel">Тёмная тема</span>
+          </button>
+        </div>
+      </nav>
+      <main class="main-content">
+      <!-- Dashboard -->
+      <div id="view-dashboard" class="view active">
+        <div class="container">
+          <header style="display:flex;align-items:flex-start;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div>
+                <h1>НЦМУ Мониторинг разметки</h1>
+                <p>СтГАУ · НЦМУ «Агроинженерия будущего»</p>
+              </div>
+            </div>
+          </header>
 
-    <div class="alert" id="errorAlert"></div>
+          <div class="alert" id="errorAlert"></div>
 
-    <div class="overview-grid" id="overview">
-      <div class="overview-card">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/><path d="M3 9h18"/><path d="M3 15h18"/></svg>
-        <div class="label">Проекты</div><div class="value" id="totalProjects"><div class="skeleton skeleton-lg"></div></div>
+          <div class="overview-grid" id="overview">
+            <div class="overview-card">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/><path d="M3 9h18"/><path d="M3 15h18"/></svg>
+              <div class="label">Проекты</div><div class="value" id="totalProjects"><div class="skeleton skeleton-lg"></div></div>
+            </div>
+            <div class="overview-card">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+              <div class="label">Задачи</div><div class="value" id="totalTasks"><div class="skeleton skeleton-lg"></div></div>
+            </div>
+            <div class="overview-card">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <div class="label">Разметчики</div><div class="value" id="totalAnnotators"><div class="skeleton skeleton-lg"></div></div>
+            </div>
+          </div>
+
+          <div class="section-title">
+            Разметчики
+            <span class="count-badge" id="annotatorCount">0</span>
+          </div>
+
+          <div class="tabs" id="tabs"></div>
+
+          <div id="groupStatsBar" style="display:none;margin-bottom:12px;">
+            <button class="btn btn-sm" onclick="openGroupStats()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+              Статистика группы
+            </button>
+          </div>
+
+          <div class="cards-grid" id="annotatorsContainer"></div>
+
+          <div class="footer-text">СтГАУ · НЦМУ «Агроинженерия будущего»</div>
+        </div>
       </div>
-      <div class="overview-card">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
-        <div class="label">Задачи</div><div class="value" id="totalTasks"><div class="skeleton skeleton-lg"></div></div>
+
+      <!-- Events -->
+      <div id="view-events" class="view">
+        <div class="container">
+          <div class="view-header">
+            <h1>Лента событий</h1>
+            <p>Последние созданные проекты и задачи в CVAT</p>
+          </div>
+          <div id="events-container">
+            <div class="events-list" id="events-list"></div>
+            <div class="empty-state" id="events-empty" style="display:none;">Нет событий</div>
+          </div>
+        </div>
       </div>
-      <div class="overview-card">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        <div class="label">Разметчики</div><div class="value" id="totalAnnotators"><div class="skeleton skeleton-lg"></div></div>
-      </div>
+    </main>
     </div>
-
-    <div class="section-title">
-      Разметчики
-      <span class="count-badge" id="annotatorCount">0</span>
-    </div>
-
-    <div class="tabs" id="tabs"></div>
-
-    <div id="groupStatsBar" style="display:none;margin-bottom:12px;">
-      <button class="btn btn-sm" onclick="openGroupStats()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
-        Статистика группы
-      </button>
-    </div>
-
-    <div class="cards-grid" id="annotatorsContainer"></div>
-
-    <div class="footer-text">СтГАУ · НЦМУ «Агроинженерия будущего»</div>
   </div>
 
   <!-- Modal -->
@@ -338,6 +596,6 @@
     </div>
   </div>
 
-  <script src="/static/app.js?v=9"></script>
+  <script src="/static/app.js?v=10"></script>
 </body>
 </html>
