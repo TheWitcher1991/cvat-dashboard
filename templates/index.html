@@ -795,6 +795,50 @@
       flex-wrap: wrap;
     }
 
+    .date-range {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 16px;
+      flex-wrap: wrap;
+    }
+
+    .date-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .date-input {
+      padding: 6px 10px;
+      font-size: 13px;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      outline: none;
+    }
+
+    .date-input:focus {
+      border-color: var(--accent);
+    }
+
+    .date-sep {
+      color: var(--text-dim);
+      font-size: 14px;
+    }
+
+    .date-hint {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-left: auto;
+    }
+
     @media (max-width: 900px) {
       .cards-grid {
         grid-template-columns: 1fr 1fr;
@@ -1443,69 +1487,50 @@
                   transition: stroke-width 0.15s, opacity 0.15s;
                   cursor: pointer;
                 }
-
                 #view-dashboard:hover .chart-card svg path[fill-opacity] {
                   transition: fill-opacity 0.15s;
                   cursor: pointer;
                 }
-
                 #view-dashboard .chart-card svg:hover polyline {
                   opacity: 0.3;
                 }
-
                 #view-dashboard .chart-card svg:hover path[fill-opacity] {
                   fill-opacity: 0.05;
                 }
-
                 #view-dashboard .chart-card svg .series:hover polyline {
                   opacity: 1;
                   stroke-width: 4;
                 }
-
                 #view-dashboard .chart-card svg .series:hover path[fill-opacity] {
                   fill-opacity: 0.2;
                 }
-
                 #view-dashboard .chart-card svg circle {
                   cursor: pointer;
                   transition: r 0.12s, opacity 0.15s;
                   opacity: 0;
                 }
-
                 #view-dashboard:hover .chart-card svg circle {
                   opacity: 1;
                 }
-
                 #view-dashboard .chart-card svg circle:hover {
                   r: 6;
                 }
               </style>
               <div style="display:flex;gap:20px;margin-bottom:16px;flex-wrap:wrap;">
-                <span style="display:flex;align-items:center;gap:6px;font-size:12px;"><span
-                    style="width:10px;height:3px;border-radius:2px;background:var(--accent);display:inline-block;"></span>
-                  СтГАУ</span>
-                <span style="display:flex;align-items:center;gap:6px;font-size:12px;"><span
-                    style="width:10px;height:3px;border-radius:2px;background:var(--green);display:inline-block;"></span>
-                  СПбГАУ</span>
-                <span style="display:flex;align-items:center;gap:6px;font-size:12px;"><span
-                    style="width:10px;height:3px;border-radius:2px;background:var(--yellow);display:inline-block;"></span>
-                  КБГАУ</span>
-                <span style="display:flex;align-items:center;gap:6px;font-size:12px;"><span
-                    style="width:10px;height:3px;border-radius:2px;background:var(--red);display:inline-block;"></span>
-                  ВГАУ</span>
+                <span style="display:flex;align-items:center;gap:6px;font-size:12px;"><span style="width:10px;height:3px;border-radius:2px;background:var(--accent);display:inline-block;"></span> СтГАУ</span>
+                <span style="display:flex;align-items:center;gap:6px;font-size:12px;"><span style="width:10px;height:3px;border-radius:2px;background:var(--green);display:inline-block;"></span> СПбГАУ</span>
+                <span style="display:flex;align-items:center;gap:6px;font-size:12px;"><span style="width:10px;height:3px;border-radius:2px;background:var(--yellow);display:inline-block;"></span> КБГАУ</span>
+                <span style="display:flex;align-items:center;gap:6px;font-size:12px;"><span style="width:10px;height:3px;border-radius:2px;background:var(--red);display:inline-block;"></span> ВГАУ</span>
               </div>
-
               <div style="position:relative;padding-bottom:16px;" class="chart-area">
                 <svg viewBox="-40 0 560 200" style="width:100%;height:auto;display:block;" preserveAspectRatio="none">
                   <line x1="0" y1="40" x2="520" y2="40" stroke="var(--bg-muted)" stroke-width="1" />
                   <line x1="0" y1="90" x2="520" y2="90" stroke="var(--bg-muted)" stroke-width="1" />
                   <line x1="0" y1="140" x2="520" y2="140" stroke="var(--bg-muted)" stroke-width="1" />
                   <line x1="0" y1="190" x2="520" y2="190" stroke="var(--border)" stroke-width="1" />
-
                   <text x="-5" y="43" font-size="8" fill="var(--text-dim)" text-anchor="end">5k</text>
                   <text x="-5" y="93" font-size="8" fill="var(--text-dim)" text-anchor="end">2.5k</text>
                   <text x="-5" y="143" font-size="8" fill="var(--text-dim)" text-anchor="end">0</text>
-
                   <text x="0" y="196" font-size="8" fill="var(--text-dim)" text-anchor="middle">Сен</text>
                   <text x="65" y="196" font-size="8" fill="var(--text-dim)" text-anchor="middle">Окт</text>
                   <text x="130" y="196" font-size="8" fill="var(--text-dim)" text-anchor="middle">Ноя</text>
@@ -1515,144 +1540,57 @@
                   <text x="390" y="196" font-size="8" fill="var(--text-dim)" text-anchor="middle">Мар</text>
                   <text x="455" y="196" font-size="8" fill="var(--text-dim)" text-anchor="middle">Апр</text>
                   <text x="520" y="196" font-size="8" fill="var(--text-dim)" text-anchor="middle">Май</text>
-
                   <g class="series">
-                    <path d="M0,89 L65,75 L130,86 L195,42 L260,53 L325,28 L390,64 L455,39 L520,17 L520,190 L0,190 Z"
-                      fill="var(--accent)" fill-opacity="0.12" stroke="none" />
-                    <polyline points="0,89 65,75 130,86 195,42 260,53 325,28 390,64 455,39 520,17" fill="none"
-                      stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
-                    <circle cx="0" cy="89" r="3.5" fill="var(--accent)">
-                      <title>СтГАУ: 2 800</title>
-                    </circle>
-                    <circle cx="65" cy="75" r="3.5" fill="var(--accent)">
-                      <title>СтГАУ: 3 200</title>
-                    </circle>
-                    <circle cx="130" cy="86" r="3.5" fill="var(--accent)">
-                      <title>СтГАУ: 2 900</title>
-                    </circle>
-                    <circle cx="195" cy="42" r="3.5" fill="var(--accent)">
-                      <title>СтГАУ: 4 100</title>
-                    </circle>
-                    <circle cx="260" cy="53" r="3.5" fill="var(--accent)">
-                      <title>СтГАУ: 3 800</title>
-                    </circle>
-                    <circle cx="325" cy="28" r="3.5" fill="var(--accent)">
-                      <title>СтГАУ: 4 500</title>
-                    </circle>
-                    <circle cx="390" cy="64" r="3.5" fill="var(--accent)">
-                      <title>СтГАУ: 3 500</title>
-                    </circle>
-                    <circle cx="455" cy="39" r="3.5" fill="var(--accent)">
-                      <title>СтГАУ: 4 200</title>
-                    </circle>
-                    <circle cx="520" cy="17" r="3.5" fill="var(--accent)">
-                      <title>СтГАУ: 4 800</title>
-                    </circle>
+                    <path d="M0,89 L65,75 L130,86 L195,42 L260,53 L325,28 L390,64 L455,39 L520,17 L520,190 L0,190 Z" fill="var(--accent)" fill-opacity="0.12" stroke="none" />
+                    <polyline points="0,89 65,75 130,86 195,42 260,53 325,28 390,64 455,39 520,17" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                    <circle cx="0" cy="89" r="3.5" fill="var(--accent)"><title>СтГАУ: 2 800</title></circle>
+                    <circle cx="65" cy="75" r="3.5" fill="var(--accent)"><title>СтГАУ: 3 200</title></circle>
+                    <circle cx="130" cy="86" r="3.5" fill="var(--accent)"><title>СтГАУ: 2 900</title></circle>
+                    <circle cx="195" cy="42" r="3.5" fill="var(--accent)"><title>СтГАУ: 4 100</title></circle>
+                    <circle cx="260" cy="53" r="3.5" fill="var(--accent)"><title>СтГАУ: 3 800</title></circle>
+                    <circle cx="325" cy="28" r="3.5" fill="var(--accent)"><title>СтГАУ: 4 500</title></circle>
+                    <circle cx="390" cy="64" r="3.5" fill="var(--accent)"><title>СтГАУ: 3 500</title></circle>
+                    <circle cx="455" cy="39" r="3.5" fill="var(--accent)"><title>СтГАУ: 4 200</title></circle>
+                    <circle cx="520" cy="17" r="3.5" fill="var(--accent)"><title>СтГАУ: 4 800</title></circle>
                   </g>
-
                   <g class="series">
-                    <path
-                      d="M0,125 L65,114 L130,122 L195,100 L260,111 L325,89 L390,107 L455,96 L520,82 L520,190 L0,190 Z"
-                      fill="var(--green)" fill-opacity="0.12" stroke="none" />
-                    <polyline points="0,125 65,114 130,122 195,100 260,111 325,89 390,107 455,96 520,82" fill="none"
-                      stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
-                    <circle cx="0" cy="125" r="3.5" fill="var(--green)">
-                      <title>СПбГАУ: 1 800</title>
-                    </circle>
-                    <circle cx="65" cy="114" r="3.5" fill="var(--green)">
-                      <title>СПбГАУ: 2 100</title>
-                    </circle>
-                    <circle cx="130" cy="122" r="3.5" fill="var(--green)">
-                      <title>СПбГАУ: 1 900</title>
-                    </circle>
-                    <circle cx="195" cy="100" r="3.5" fill="var(--green)">
-                      <title>СПбГАУ: 2 500</title>
-                    </circle>
-                    <circle cx="260" cy="111" r="3.5" fill="var(--green)">
-                      <title>СПбГАУ: 2 200</title>
-                    </circle>
-                    <circle cx="325" cy="89" r="3.5" fill="var(--green)">
-                      <title>СПбГАУ: 2 800</title>
-                    </circle>
-                    <circle cx="390" cy="107" r="3.5" fill="var(--green)">
-                      <title>СПбГАУ: 2 300</title>
-                    </circle>
-                    <circle cx="455" cy="96" r="3.5" fill="var(--green)">
-                      <title>СПбГАУ: 2 600</title>
-                    </circle>
-                    <circle cx="520" cy="82" r="3.5" fill="var(--green)">
-                      <title>СПбГАУ: 3 000</title>
-                    </circle>
+                    <path d="M0,125 L65,114 L130,122 L195,100 L260,111 L325,89 L390,107 L455,96 L520,82 L520,190 L0,190 Z" fill="var(--green)" fill-opacity="0.12" stroke="none" />
+                    <polyline points="0,125 65,114 130,122 195,100 260,111 325,89 390,107 455,96 520,82" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                    <circle cx="0" cy="125" r="3.5" fill="var(--green)"><title>СПбГАУ: 1 800</title></circle>
+                    <circle cx="65" cy="114" r="3.5" fill="var(--green)"><title>СПбГАУ: 2 100</title></circle>
+                    <circle cx="130" cy="122" r="3.5" fill="var(--green)"><title>СПбГАУ: 1 900</title></circle>
+                    <circle cx="195" cy="100" r="3.5" fill="var(--green)"><title>СПбГАУ: 2 500</title></circle>
+                    <circle cx="260" cy="111" r="3.5" fill="var(--green)"><title>СПбГАУ: 2 200</title></circle>
+                    <circle cx="325" cy="89" r="3.5" fill="var(--green)"><title>СПбГАУ: 2 800</title></circle>
+                    <circle cx="390" cy="107" r="3.5" fill="var(--green)"><title>СПбГАУ: 2 300</title></circle>
+                    <circle cx="455" cy="96" r="3.5" fill="var(--green)"><title>СПбГАУ: 2 600</title></circle>
+                    <circle cx="520" cy="82" r="3.5" fill="var(--green)"><title>СПбГАУ: 3 000</title></circle>
                   </g>
-
                   <g class="series">
-                    <path
-                      d="M0,147 L65,136 L130,140 L195,125 L260,132 L325,118 L390,129 L455,122 L520,111 L520,190 L0,190 Z"
-                      fill="var(--yellow)" fill-opacity="0.12" stroke="none" />
-                    <polyline points="0,147 65,136 130,140 195,125 260,132 325,118 390,129 455,122 520,111" fill="none"
-                      stroke="var(--yellow)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
-                    <circle cx="0" cy="147" r="3.5" fill="var(--yellow)">
-                      <title>КБГАУ: 1 200</title>
-                    </circle>
-                    <circle cx="65" cy="136" r="3.5" fill="var(--yellow)">
-                      <title>КБГАУ: 1 500</title>
-                    </circle>
-                    <circle cx="130" cy="140" r="3.5" fill="var(--yellow)">
-                      <title>КБГАУ: 1 400</title>
-                    </circle>
-                    <circle cx="195" cy="125" r="3.5" fill="var(--yellow)">
-                      <title>КБГАУ: 1 800</title>
-                    </circle>
-                    <circle cx="260" cy="132" r="3.5" fill="var(--yellow)">
-                      <title>КБГАУ: 1 600</title>
-                    </circle>
-                    <circle cx="325" cy="118" r="3.5" fill="var(--yellow)">
-                      <title>КБГАУ: 2 000</title>
-                    </circle>
-                    <circle cx="390" cy="129" r="3.5" fill="var(--yellow)">
-                      <title>КБГАУ: 1 700</title>
-                    </circle>
-                    <circle cx="455" cy="122" r="3.5" fill="var(--yellow)">
-                      <title>КБГАУ: 1 900</title>
-                    </circle>
-                    <circle cx="520" cy="111" r="3.5" fill="var(--yellow)">
-                      <title>КБГАУ: 2 200</title>
-                    </circle>
+                    <path d="M0,147 L65,136 L130,140 L195,125 L260,132 L325,118 L390,129 L455,122 L520,111 L520,190 L0,190 Z" fill="var(--yellow)" fill-opacity="0.12" stroke="none" />
+                    <polyline points="0,147 65,136 130,140 195,125 260,132 325,118 390,129 455,122 520,111" fill="none" stroke="var(--yellow)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                    <circle cx="0" cy="147" r="3.5" fill="var(--yellow)"><title>КБГАУ: 1 200</title></circle>
+                    <circle cx="65" cy="136" r="3.5" fill="var(--yellow)"><title>КБГАУ: 1 500</title></circle>
+                    <circle cx="130" cy="140" r="3.5" fill="var(--yellow)"><title>КБГАУ: 1 400</title></circle>
+                    <circle cx="195" cy="125" r="3.5" fill="var(--yellow)"><title>КБГАУ: 1 800</title></circle>
+                    <circle cx="260" cy="132" r="3.5" fill="var(--yellow)"><title>КБГАУ: 1 600</title></circle>
+                    <circle cx="325" cy="118" r="3.5" fill="var(--yellow)"><title>КБГАУ: 2 000</title></circle>
+                    <circle cx="390" cy="129" r="3.5" fill="var(--yellow)"><title>КБГАУ: 1 700</title></circle>
+                    <circle cx="455" cy="122" r="3.5" fill="var(--yellow)"><title>КБГАУ: 1 900</title></circle>
+                    <circle cx="520" cy="111" r="3.5" fill="var(--yellow)"><title>КБГАУ: 2 200</title></circle>
                   </g>
-
                   <g class="series">
-                    <path
-                      d="M0,161 L65,150 L130,158 L195,143 L260,147 L325,136 L390,154 L455,140 L520,132 L520,190 L0,190 Z"
-                      fill="var(--red)" fill-opacity="0.12" stroke="none" />
-                    <polyline points="0,161 65,150 130,158 195,143 260,147 325,136 390,154 455,140 520,132" fill="none"
-                      stroke="var(--red)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
-                    <circle cx="0" cy="161" r="3.5" fill="var(--red)">
-                      <title>ВГАУ: 800</title>
-                    </circle>
-                    <circle cx="65" cy="150" r="3.5" fill="var(--red)">
-                      <title>ВГАУ: 1 100</title>
-                    </circle>
-                    <circle cx="130" cy="158" r="3.5" fill="var(--red)">
-                      <title>ВГАУ: 900</title>
-                    </circle>
-                    <circle cx="195" cy="143" r="3.5" fill="var(--red)">
-                      <title>ВГАУ: 1 300</title>
-                    </circle>
-                    <circle cx="260" cy="147" r="3.5" fill="var(--red)">
-                      <title>ВГАУ: 1 200</title>
-                    </circle>
-                    <circle cx="325" cy="136" r="3.5" fill="var(--red)">
-                      <title>ВГАУ: 1 500</title>
-                    </circle>
-                    <circle cx="390" cy="154" r="3.5" fill="var(--red)">
-                      <title>ВГАУ: 1 000</title>
-                    </circle>
-                    <circle cx="455" cy="140" r="3.5" fill="var(--red)">
-                      <title>ВГАУ: 1 400</title>
-                    </circle>
-                    <circle cx="520" cy="132" r="3.5" fill="var(--red)">
-                      <title>ВГАУ: 1 600</title>
-                    </circle>
+                    <path d="M0,161 L65,150 L130,158 L195,143 L260,147 L325,136 L390,154 L455,140 L520,132 L520,190 L0,190 Z" fill="var(--red)" fill-opacity="0.12" stroke="none" />
+                    <polyline points="0,161 65,150 130,158 195,143 260,147 325,136 390,154 455,140 520,132" fill="none" stroke="var(--red)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                    <circle cx="0" cy="161" r="3.5" fill="var(--red)"><title>ВГАУ: 800</title></circle>
+                    <circle cx="65" cy="150" r="3.5" fill="var(--red)"><title>ВГАУ: 1 100</title></circle>
+                    <circle cx="130" cy="158" r="3.5" fill="var(--red)"><title>ВГАУ: 900</title></circle>
+                    <circle cx="195" cy="143" r="3.5" fill="var(--red)"><title>ВГАУ: 1 300</title></circle>
+                    <circle cx="260" cy="147" r="3.5" fill="var(--red)"><title>ВГАУ: 1 200</title></circle>
+                    <circle cx="325" cy="136" r="3.5" fill="var(--red)"><title>ВГАУ: 1 500</title></circle>
+                    <circle cx="390" cy="154" r="3.5" fill="var(--red)"><title>ВГАУ: 1 000</title></circle>
+                    <circle cx="455" cy="140" r="3.5" fill="var(--red)"><title>ВГАУ: 1 400</title></circle>
+                    <circle cx="520" cy="132" r="3.5" fill="var(--red)"><title>ВГАУ: 1 600</title></circle>
                   </g>
                 </svg>
               </div>
@@ -1664,7 +1602,7 @@
                   <span>Топ разметчиков</span>
                   <span class="badge badge-default">По заданиям</span>
                 </div>
-                <div class="leaderboard">
+                <div class="leaderboard" id="dashTopAnnotatorsStatic">
                   <div class="lb-item">
                     <div class="lb-rank gold">1</div>
                     <div class="lb-name">Иванов Иван</div>
@@ -1788,6 +1726,15 @@
                   <div class="skeleton skeleton-lg"></div>
                 </div>
               </div>
+            </div>
+
+            <div class="date-range">
+              <span class="date-label">Период:</span>
+              <input type="date" id="dateFrom" class="date-input" onchange="onDateChange()" placeholder="от">
+              <span class="date-sep">—</span>
+              <input type="date" id="dateTo" class="date-input" onchange="onDateChange()" placeholder="до">
+              <button class="btn btn-sm" onclick="clearDates()" id="clearDatesBtn" style="display:none;">Сбросить</button>
+              <span class="date-hint">Фильтр по updated_date</span>
             </div>
 
             <div class="section-title">

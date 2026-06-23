@@ -1,6 +1,8 @@
 let allAnnotators = [];
 let groups = [];
 let currentGroup = null;
+let dateFrom = '';
+let dateTo = '';
 
 function getToken() { return localStorage.getItem('token'); }
 function setToken(t) { localStorage.setItem('token', t); }
@@ -20,6 +22,14 @@ async function fetchJSON(url) {
     throw new Error(err.detail || `HTTP ${res.status}`);
   }
   return res.json();
+}
+
+function dateParams() {
+  const params = new URLSearchParams();
+  if (dateFrom) params.set('date_from', dateFrom);
+  if (dateTo) params.set('date_to', dateTo);
+  const s = params.toString();
+  return s ? `&${s}` : '';
 }
 
 function showError(msg) {
@@ -196,7 +206,7 @@ async function loadGroups() {
 
 async function loadOverview() {
   try {
-    const data = await fetchJSON('/api/overview');
+    const data = await fetchJSON(`/api/overview?page_size=1${dateParams()}`);
     document.getElementById('totalProjects').textContent = data.total_projects;
     document.getElementById('totalTasks').textContent = data.total_tasks;
     document.getElementById('totalAnnotators').textContent = data.total_annotators;
@@ -297,7 +307,7 @@ function openModal(username) {
   title.textContent = `Статистика — @${username}`;
   content.innerHTML = showModalSkeleton();
 
-  fetchJSON(`/api/annotators/${encodeURIComponent(username)}/stats`)
+  fetchJSON(`/api/annotators/${encodeURIComponent(username)}/stats?page_size=1${dateParams()}`)
     .then(data => { content.innerHTML = renderStatsContent(data); })
     .catch(e => {
       content.innerHTML = `<div style="padding:12px 16px;border-radius:var(--radius);border:1px solid var(--red);background:var(--red-bg);color:var(--red);font-size:13px;">Ошибка: ${e.message}</div>`;
@@ -316,7 +326,7 @@ function openGroupStats() {
   title.textContent = `Статистика — ${currentGroup}`;
   content.innerHTML = showModalSkeleton();
 
-  fetchJSON(`/api/groups/${encodeURIComponent(currentGroup)}/stats`)
+  fetchJSON(`/api/groups/${encodeURIComponent(currentGroup)}/stats?page_size=1${dateParams()}`)
     .then(data => { content.innerHTML = renderStatsContent(data); })
     .catch(e => {
       content.innerHTML = `<div style="padding:12px 16px;border-radius:var(--radius);border:1px solid var(--red);background:var(--red-bg);color:var(--red);font-size:13px;">Ошибка: ${e.message}</div>`;
@@ -326,6 +336,22 @@ function openGroupStats() {
 function closeModal() {
   document.getElementById('statsModal').classList.remove('open');
   document.body.style.overflow = '';
+}
+
+function onDateChange() {
+  dateFrom = document.getElementById('dateFrom').value;
+  dateTo = document.getElementById('dateTo').value;
+  document.getElementById('clearDatesBtn').style.display = (dateFrom || dateTo) ? 'inline-flex' : 'none';
+  loadUsers();
+}
+
+function clearDates() {
+  dateFrom = '';
+  dateTo = '';
+  document.getElementById('dateFrom').value = '';
+  document.getElementById('dateTo').value = '';
+  document.getElementById('clearDatesBtn').style.display = 'none';
+  loadUsers();
 }
 
 /* ── View switching ── */
@@ -347,7 +373,7 @@ async function loadEvents() {
   list.innerHTML = Array(5).fill('<div class="skeleton skeleton-event"></div>').join('');
   empty.style.display = 'none';
   try {
-    const events = await fetchJSON('/api/events');
+    const events = await fetchJSON(`/api/events?limit=30${dateParams()}`);
     if (!events.length) {
       list.innerHTML = '';
       empty.style.display = 'block';

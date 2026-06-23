@@ -63,6 +63,18 @@ def _user_filter(usernames: list[str]) -> str:
     })
 
 
+def _with_date_filter(base_filter: str, date_from: str = None, date_to: str = None) -> str:
+    if not date_from and not date_to:
+        return base_filter
+    base = json.loads(base_filter)
+    conditions = [base]
+    if date_from:
+        conditions.append({">=": [{"var": "updated_date"}, f"{date_from}T00:00:00"]})
+    if date_to:
+        conditions.append({"<=": [{"var": "updated_date"}, f"{date_to}T23:59:59"]})
+    return json.dumps({"and": conditions})
+
+
 def _single_filter(field: str, value: str) -> str:
     return json.dumps({"==": [{"var": field}, value]})
 
@@ -133,7 +145,7 @@ async def list_groups():
 
 
 @app.get("/api/groups/{group_name}/stats", dependencies=[Depends(verify_token)])
-async def group_stats(group_name: str):
+async def group_stats(group_name: str, date_from: str = None, date_to: str = None):
     usernames = None
     for name, users in USER_GROUPS:
         if name == group_name:
@@ -147,7 +159,7 @@ async def group_stats(group_name: str):
 
     client = get_client()
     try:
-        flt = _user_filter(usernames)
+        flt = _with_date_filter(_user_filter(usernames), date_from, date_to)
         tasks = _fetch_all(
             endpoint=client.api_client.tasks_api.list_endpoint,
             filter=flt,
@@ -193,13 +205,13 @@ async def group_stats(group_name: str):
 
 
 @app.get("/api/dashboard", dependencies=[Depends(verify_token)])
-async def dashboard():
+async def dashboard(date_from: str = None, date_to: str = None):
     if not _ALL_USERNAMES:
         return {"overview": {"total_projects": 0, "total_tasks": 0, "total_annotators": 0}, "groups": []}
 
     client = get_client()
     try:
-        flt = _user_filter(_ALL_USERNAMES)
+        flt = _with_date_filter(_user_filter(_ALL_USERNAMES), date_from, date_to)
 
         proj_res, _ = client.api_client.projects_api.list_endpoint.call_with_http_info(
             filter=flt, page=1, page_size=1
@@ -228,7 +240,7 @@ async def dashboard():
                 })
                 continue
 
-            gflt = _user_filter(usernames)
+            gflt = _with_date_filter(_user_filter(usernames), date_from, date_to)
             gproj, _ = client.api_client.projects_api.list_endpoint.call_with_http_info(
                 filter=gflt, page=1, page_size=1
             )
@@ -314,20 +326,19 @@ async def list_annotators():
 
 
 @app.get("/api/annotators/{username}/stats", dependencies=[Depends(verify_token)])
-async def annotator_stats(username: str):
+async def annotator_stats(username: str, date_from: str = None, date_to: str = None):
     if username not in _ALL_USERNAMES:
         raise HTTPException(status_code=404, detail="User not found")
 
     client = get_client()
     try:
-        user_flt = _single_filter("owner", username)
-        user_assignee_flt = _single_filter("assignee", username)
         user_or_flt = json.dumps({
             "or": [
                 {"==": [{"var": "owner"}, username]},
                 {"==": [{"var": "assignee"}, username]},
             ]
         })
+        user_or_flt = _with_date_filter(user_or_flt, date_from, date_to)
 
         projects = _fetch_all(
             endpoint=client.api_client.projects_api.list_endpoint,
@@ -374,13 +385,13 @@ async def annotator_stats(username: str):
 
 
 @app.get("/api/overview", dependencies=[Depends(verify_token)])
-async def overview():
+async def overview(date_from: str = None, date_to: str = None):
     if not _ALL_USERNAMES:
         return {"total_projects": 0, "total_tasks": 0, "total_jobs": 0, "total_annotators": 0}
 
     client = get_client()
     try:
-        flt = _user_filter(_ALL_USERNAMES)
+        flt = _with_date_filter(_user_filter(_ALL_USERNAMES), date_from, date_to)
 
         projects_res, _ = client.api_client.projects_api.list_endpoint.call_with_http_info(
             filter=flt, page=1, page_size=1
@@ -402,13 +413,13 @@ async def overview():
 
 
 @app.get("/api/events", dependencies=[Depends(verify_token)])
-async def get_events(limit: int = 30):
+async def get_events(limit: int = 30, date_from: str = None, date_to: str = None):
     if not _ALL_USERNAMES:
         return []
 
     client = get_client()
     try:
-        flt = _user_filter(_ALL_USERNAMES)
+        flt = _with_date_filter(_user_filter(_ALL_USERNAMES), date_from, date_to)
 
         proj_res, _ = client.api_client.projects_api.list_endpoint.call_with_http_info(
             filter=flt, sort="-created_date", page=1, page_size=limit
@@ -451,13 +462,13 @@ async def get_events(limit: int = 30):
 
 
 @app.get("/api/annotators/batch-stats", dependencies=[Depends(verify_token)])
-async def annotators_batch_stats():
+async def annotators_batch_stats(date_from: str = None, date_to: str = None):
     if not _ALL_USERNAMES:
         return []
 
     client = get_client()
     try:
-        user_flt = _user_filter(_ALL_USERNAMES)
+        user_flt = _with_date_filter(_user_filter(_ALL_USERNAMES), date_from, date_to)
 
         projects = _fetch_all(
             endpoint=client.api_client.projects_api.list_endpoint,
