@@ -37,7 +37,7 @@ USER_GROUPS = [
         "VOR.SomeoneFamous", "VOR.Roldugin", "VOR.Podlesny", "VOR.Tolstoy",
         "VOR.Simakov", "VOR.Mazov", "VOR.Skirliu", "VOR.Tyutina",
     ]),
-    ("УлГАУ", []),
+    ("УлГАУ", ["Andreeva.K", "Sindyaev.A", "Evdokimov.E", "Yumangulov.R", "Alsheikin.I"]),
 ]
 
 _ALL_USERNAMES = [u for _, users in USER_GROUPS for u in users]
