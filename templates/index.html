@@ -4,6 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="/public/logo.png">
   <title>НЦМУ Мониторинг разметки — СтГАУ</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -253,6 +254,51 @@
       width: 16px;
       height: 16px;
       flex-shrink: 0;
+    }
+
+    .nav-counter {
+      margin-left: auto;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 8px;
+      background: var(--sidebar-accent);
+      color: var(--sidebar-accent-fg);
+      opacity: 0.6;
+      min-width: 18px;
+      text-align: center;
+    }
+    .nav-counter:empty {
+      display: none;
+    }
+
+    .health-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 8px;
+      font-size: 11px;
+      cursor: default;
+    }
+    .health-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .health-dot.ok {
+      background: #22c55e;
+    }
+    .health-dot.err {
+      background: #ef4444;
+    }
+    .health-dot.loading {
+      background: #a0a0a0;
+      animation: pulse 1.2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
     }
 
     .sidebar-footer {
@@ -1004,6 +1050,10 @@
       margin-bottom: 24px;
     }
 
+    #calendarCard {
+      grid-column: 1 / -1;
+    }
+
     .chart-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
@@ -1214,6 +1264,52 @@
         grid-template-columns: 1fr;
       }
     }
+
+    .table-compact {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .table-compact th {
+      text-align: left;
+      padding: 10px 14px;
+      font-weight: 500;
+      color: var(--text-dim);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: var(--bg-muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .table-compact td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .table-compact tr:last-child td {
+      border-bottom: none;
+    }
+    .table-compact tr:hover td {
+      background: var(--bg-hover);
+    }
+
+    .progress-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .progress-fill {
+      height: 8px;
+      border-radius: 4px;
+      background: var(--accent);
+      min-width: 4px;
+      transition: width 0.3s;
+    }
+    .progress-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-dim);
+      white-space: nowrap;
+    }
   </style>
 </head>
 
@@ -1269,6 +1365,15 @@
             <path d="M16 3.13a4 4 0 0 1 0 7.75" />
           </svg>
           <span>Пользователи</span>
+          <span class="nav-counter" id="usersCounter"></span>
+        </button>
+        <button class="nav-item" data-view="tasks" onclick="switchView('tasks')">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
+            <rect x="9" y="3" width="6" height="4" rx="1" />
+          </svg>
+          <span>Задания</span>
         </button>
         <button class="nav-item" data-view="events" onclick="switchView('events')">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -1276,6 +1381,7 @@
             <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
           </svg>
           <span>Лента событий</span>
+          <span class="nav-counter" id="eventsCounter"></span>
         </button>
       </nav>
       <div class="sidebar-footer">НЦМУ «Агроинженерия будущего»</div>
@@ -1304,6 +1410,11 @@
             </svg>
             <span>AgroHeal</span>
           </a>
+          <span class="top-nav-sep"></span>
+          <div class="top-nav-btn health-indicator" id="healthIndicator" title="Статус CVAT">
+            <span class="health-dot" id="healthDot"></span>
+            <span id="healthLabel">...</span>
+          </div>
           <span class="top-nav-sep"></span>
           <button class="top-nav-btn" onclick="toggleTheme()" title="Сменить тему">
             <svg id="themeIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -1426,52 +1537,20 @@
                   </div>
                 </div>
               </div>
-              <div class="chart-card">
+              <div class="chart-card" id="calendarCard">
                 <div class="chart-title">
-                  <span>Активность по месяцам</span>
-                  <span class="badge badge-default">Задачи</span>
+                  <span>Активность</span>
+                  <span class="badge badge-default">Задачи по дням</span>
                 </div>
-                <div class="vbar-chart">
-                  <div class="vbar-wrap">
-                    <div class="vbar" style="height:58%;background:var(--accent);"></div>
-                    <span class="vbar-label">Сен</span>
-                  </div>
-                  <div class="vbar-wrap">
-                    <div class="vbar" style="height:75%;background:var(--accent);"></div>
-                    <span class="vbar-label">Окт</span>
-                  </div>
-                  <div class="vbar-wrap">
-                    <div class="vbar" style="height:50%;background:var(--accent);"></div>
-                    <span class="vbar-label">Ноя</span>
-                  </div>
-                  <div class="vbar-wrap">
-                    <div class="vbar" style="height:83%;background:var(--accent);"></div>
-                    <span class="vbar-label">Дек</span>
-                  </div>
-                  <div class="vbar-wrap">
-                    <div class="vbar" style="height:67%;background:var(--accent);"></div>
-                    <span class="vbar-label">Янв</span>
-                  </div>
-                  <div class="vbar-wrap">
-                    <div class="vbar" style="height:92%;background:var(--accent);"></div>
-                    <span class="vbar-label">Фев</span>
-                  </div>
-                  <div class="vbar-wrap">
-                    <div class="vbar" style="height:62%;background:var(--accent);"></div>
-                    <span class="vbar-label">Мар</span>
-                  </div>
-                  <div class="vbar-wrap">
-                    <div class="vbar" style="height:79%;background:var(--accent);"></div>
-                    <span class="vbar-label">Апр</span>
-                  </div>
-                  <div class="vbar-wrap">
-                    <div class="vbar" style="height:100%;background:var(--green);"></div>
-                    <span class="vbar-label">Май</span>
-                  </div>
-                  <div class="vbar-wrap">
-                    <div class="vbar" style="height:42%;background:var(--accent);"></div>
-                    <span class="vbar-label">Июн</span>
-                  </div>
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;">
+                  <span style="font-size:11px;color:var(--text-dim);">Период:</span>
+                  <input type="date" id="calDateFrom" class="date-input" style="height:28px;font-size:11px;">
+                  <span class="date-sep">—</span>
+                  <input type="date" id="calDateTo" class="date-input" style="height:28px;font-size:11px;">
+                  <button class="btn btn-sm" onclick="loadActivityCalendar()" style="height:28px;">Применить</button>
+                </div>
+                <div id="calendarContainer" style="min-height:160px;">
+                  <div class="skeleton" style="height:140px;border-radius:6px;"></div>
                 </div>
               </div>
             </div>
@@ -1773,12 +1852,26 @@
               <div class="empty-state" id="events-empty" style="display:none;">Нет событий</div>
             </div>
           </div>
+        </div>
+
+        <div id="view-tasks" class="view">
+          <div class="container">
+            <div class="view-header">
+              <h1>Задания по вузам</h1>
+              <p>Статистика заданий в разрезе университетов</p>
+            </div>
+            <div class="date-range">
+              <span class="date-label">Период:</span>
+              <input type="date" id="tasksDateFrom" class="date-input">
+              <span class="date-sep">—</span>
+              <input type="date" id="tasksDateTo" class="date-input">
+              <button class="btn btn-sm" onclick="loadTasksView()" id="tasksApplyBtn">Применить</button>
+            </div>
+            <div id="tasks-container"></div>
+          </div>
+        </div>
       </main>
     </div>
-    </main>
-  </div>
-
-
   </div>
 
   <div class="modal-overlay" id="statsModal">
@@ -1793,7 +1886,7 @@
     </div>
   </div>
 
-  <script src="/static/app.js?v=21"></script>
+  <script src="/static/app.js?v=30"></script>
 </body>
 
 </html>

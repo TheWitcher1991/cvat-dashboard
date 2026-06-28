@@ -64,14 +64,17 @@ def _user_filter(usernames: list[str]) -> str:
 
 
 def _with_date_filter(base_filter: str, date_from: str = None, date_to: str = None) -> str:
-    if not date_from and not date_to:
-        return base_filter
+    from datetime import date, timedelta
+    if not date_from:
+        date_from = (date.today() - timedelta(days=7)).isoformat()
+    if not date_to:
+        date_to = date.today().isoformat()
     base = json.loads(base_filter)
-    conditions = [base]
-    if date_from:
-        conditions.append({">=": [{"var": "updated_date"}, f"{date_from}T00:00:00"]})
-    if date_to:
-        conditions.append({"<=": [{"var": "updated_date"}, f"{date_to}T23:59:59"]})
+    conditions = [
+        base,
+        {">=": [{"var": "updated_date"}, f"{date_from}T00:00:00"]},
+        {"<=": [{"var": "updated_date"}, f"{date_to}T23:59:59"]},
+    ]
     return json.dumps({"and": conditions})
 
 
@@ -129,6 +132,47 @@ async def auth(request: Request):
     if token == ADMIN_TOKEN:
         return {"ok": True}
     raise HTTPException(status_code=401, detail="Неверный токен")
+
+
+@app.get("/api/health", dependencies=[Depends(verify_token)])
+async def health():
+    try:
+        client = get_client()
+        client.api_client.projects_api.list_endpoint.call_with_http_info(page=1, page_size=1)
+        client.close()
+        return {"status": "ok"}
+    except Exception:
+        return JSONResponse(status_code=503, content={"status": "error"})
+
+
+@app.get("/api/activity", dependencies=[Depends(verify_token)])
+async def activity(date_from: str = None, date_to: str = None):
+    from collections import defaultdict
+    from datetime import date, timedelta
+
+    client = get_client()
+    try:
+        flt = _with_date_filter(_user_filter(_ALL_USERNAMES), date_from, date_to)
+
+        tasks = _fetch_all(
+            endpoint=client.api_client.tasks_api.list_endpoint,
+            filter=flt,
+        )
+
+        daily = defaultdict(int)
+        for t in tasks:
+            dt = t.updated_date
+            if dt:
+                d = dt.strftime('%Y-%m-%d') if hasattr(dt, 'strftime') else str(dt)[:10]
+                daily[d] += 1
+
+        return {
+            "days": [{"date": k, "count": v} for k, v in sorted(daily.items())]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        client.close()
 
 
 def index_html():
